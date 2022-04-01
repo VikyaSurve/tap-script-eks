@@ -209,15 +209,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io -y
 sudo usermod -aG docker $USER
 echo "####### Install tap-registry in all namespaces  ###########"
 sudo apt-get install jq -y
+sudo snap install yq -y
 echo "#####################################################################################################"
-sudo docker login $dockerhostname -u $dockerusername -p $dockerpassword
-sudo docker login registry.tanzu.vmware.com -u $tanzunetusername -p $tanzunetpassword
-sudo imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.0.2 --to-repo $dockerhostname/tap-demo/tap-packages
-kubectl create ns tap-install
-tanzu secret registry add tap-registry --username $dockerusername --password $dockerpassword --server $dockerhostname --export-to-all-namespaces --yes --namespace tap-install
-tanzu package repository add tanzu-tap-repository --url $dockerhostname/tap-demo/tap-packages:1.0.2 --namespace tap-install
-tanzu package repository get tanzu-tap-repository --namespace tap-install
-tanzu package available list --namespace tap-install
-
 echo "########### Rebooting #############"
 sudo reboot
