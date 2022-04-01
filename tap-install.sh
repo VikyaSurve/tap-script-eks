@@ -6,6 +6,8 @@ tanzunetpassword=$(yq '.buildservice.tanzunet_password' $HOME/tap-script-eks/tap
 dockerhostname=$(yq '.ootb_supply_chain_testing_scanning.registry.server' $HOME/tap-script-eks/tap-values.yaml)
 docker login $dockerhostname -u $dockerusername -p $dockerpassword
 docker login registry.tanzu.vmware.com -u $tanzunetusername -p $tanzunetpassword
+echo "############### Image Copy in progress  ##################"
+echo "#################################"
 imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.0.2 --to-repo $dockerhostname/tap-demo/tap-packages
 tanzu secret registry add tap-registry --username $dockerusername --password $dockerpassword --server $dockerhostname --export-to-all-namespaces --yes --namespace tap-install
 tanzu package repository add tanzu-tap-repository --url $dockerhostname/tap-demo/tap-packages:1.0.2 --namespace tap-install
