@@ -2,7 +2,8 @@
 yq '.buildservice.kp_default_repository_username' $HOME/tap-script-eks/tap-values.yaml > $dockerusername
 yq '.buildservice.kp_default_repository_password' $HOME/tap-script-eks/tap-values.yaml > $dockerpassword
 yq '.buildservice.tanzunet_username' $HOME/tap-script-eks/tap-values.yaml > $tanzunetusername
-yq '.buildservice.tanzunet_password' $HOME/tap-script-eks/tap-values.yaml > $tanzunet_password
+yq '.buildservice.tanzunet_password' $HOME/tap-script-eks/tap-values.yaml > $tanzunetpassword
+yq '.ootb_supply_chain_testing_scanning.registry.server' $HOME/tap-script-eks/tap-values.yaml > $dockerhostname
 docker login $dockerhostname -u $dockerusername -p $dockerpassword
 docker login registry.tanzu.vmware.com -u $tanzunetusername -p $tanzunetpassword
 imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.0.2 --to-repo $dockerhostname/tap-demo/tap-packages
@@ -10,8 +11,8 @@ tanzu secret registry add tap-registry --username $dockerusername --password $do
 tanzu package repository add tanzu-tap-repository --url $dockerhostname/tap-demo/tap-packages:1.0.2 --namespace tap-install
 tanzu package repository get tanzu-tap-repository --namespace tap-install
 tanzu package available list --namespace tap-install
-echo "############### TAP 1.0 Install   ##################"
-tanzu package install tap -p tap.tanzu.vmware.com -v 1.0.0 --values-file $HOME/tap-script/tap-values.yaml -n tap-install
+echo "############### TAP 1.0.2 Install   ##################"
+tanzu package install tap -p tap.tanzu.vmware.com -v 1.0.2 --values-file $HOME/tap-script/tap-values.yaml -n tap-install
 tanzu package installed list -A
 reconcilestat=$(tanzu package installed list -A -o json | jq ' .[] | select(.status == "Reconcile failed: Error (see .status.usefulErrorMessage for details)" or .status == "Reconciling")' | jq length | awk '{sum=sum+$0} END{print sum}')
 if [ $reconcilestat > '0' ];
@@ -34,8 +35,6 @@ if [ $reconcilestat > '0' ];
 	fi
 else
 	ip=$(kubectl get svc -n tap-gui -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
-        sed -i -r "s/lbip/$ip/g" "$HOME/tap-script/tap-values.yaml"
-        tanzu package installed update tap --package-name tap.tanzu.vmware.com --version 1.0.0 -n tap-install -f $HOME/tap-script/tap-values.yaml
 fi
 echo "############## Get the package install status #################"
 tanzu package installed get tap -n tap-install
@@ -51,7 +50,7 @@ if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]];
 else
 sed -i -r "s/lbip/$hostname/g" "$HOME/tap-script/tap-values.yaml"
 fi
-tanzu package installed update tap --package-name tap.tanzu.vmware.com --version 1.0.0 -n tap-install -f $HOME/tap-script/tap-values.yaml
+tanzu package installed update tap --package-name tap.tanzu.vmware.com --version 1.0.2 -n tap-install -f $HOME/tap-script/tap-values.yaml
 tanzu package installed list -A
 
 echo "################ Cluster supply chain list #####################"
@@ -183,7 +182,7 @@ grype:
 EOF
 
 echo "################### Installing Grype Scanner ##############################"
-tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version 1.0.0  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
+tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version 1.0.2  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
 echo "################### Creating workload ##############################"
 tanzu apps workload create tanzu-java-web-app  --git-repo https://github.com/Eknathreddy09/tanzu-java-web-app --git-branch main --type web --label apps.tanzu.vmware.com/has-tests=true --label app.kubernetes.io/part-of=tanzu-java-web-app  --type web -n tap-install --yes
 tanzu apps workload get tanzu-java-web-app -n tap-install
