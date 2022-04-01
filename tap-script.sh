@@ -209,7 +209,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io -y
 sudo usermod -aG docker $USER
 echo "####### Install tap-registry in all namespaces  ###########"
 sudo apt-get install jq -y
-sudo snap install yq -y
+sudo snap install yq
 echo "#####################################################################################################"
 echo "########### Rebooting #############"
 sudo reboot
