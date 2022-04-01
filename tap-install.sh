@@ -1,9 +1,9 @@
 #!/bin/bash
-yq '.buildservice.kp_default_repository_username' $HOME/tap-script-eks/tap-values.yaml > $dockerusername
-yq '.buildservice.kp_default_repository_password' $HOME/tap-script-eks/tap-values.yaml > $dockerpassword
-yq '.buildservice.tanzunet_username' $HOME/tap-script-eks/tap-values.yaml > $tanzunetusername
-yq '.buildservice.tanzunet_password' $HOME/tap-script-eks/tap-values.yaml > $tanzunetpassword
-yq '.ootb_supply_chain_testing_scanning.registry.server' $HOME/tap-script-eks/tap-values.yaml > $dockerhostname
+dockerusername=$(yq '.buildservice.kp_default_repository_username' $HOME/tap-script-eks/tap-values.yaml)
+dockerpassword=$(yq '.buildservice.kp_default_repository_password' $HOME/tap-script-eks/tap-values.yaml)
+tanzunetusername=$(yq '.buildservice.tanzunet_username' $HOME/tap-script-eks/tap-values.yaml)
+tanzunetpassword=$(yq '.buildservice.tanzunet_password' $HOME/tap-script-eks/tap-values.yaml)
+dockerhostname=$(yq '.ootb_supply_chain_testing_scanning.registry.server' $HOME/tap-script-eks/tap-values.yaml)
 docker login $dockerhostname -u $dockerusername -p $dockerpassword
 docker login registry.tanzu.vmware.com -u $tanzunetusername -p $tanzunetpassword
 imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.0.2 --to-repo $dockerhostname/tap-demo/tap-packages
