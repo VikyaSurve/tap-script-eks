@@ -184,7 +184,7 @@ grype:
 EOF
 
 echo "################### Installing Grype Scanner ##############################"
-tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version 1.0.2  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
+#tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version 1.0.2  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
 echo "################### Creating workload ##############################"
 tanzu apps workload create tanzu-java-web-app  --git-repo https://github.com/Eknathreddy09/tanzu-java-web-app --git-branch main --type web --label apps.tanzu.vmware.com/has-tests=true --label app.kubernetes.io/part-of=tanzu-java-web-app  --type web -n tap-install --yes
 tanzu apps workload get tanzu-java-web-app -n tap-install
