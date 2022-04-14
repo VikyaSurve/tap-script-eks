@@ -8,13 +8,13 @@ docker login $dockerhostname -u $dockerusername -p $dockerpassword
 docker login registry.tanzu.vmware.com -u $tanzunetusername -p $tanzunetpassword
 echo "############### Image Copy in progress  ##################"
 echo "#################################"
-imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.0.2 --to-repo $dockerhostname/tap-demo/tap-packages
+imgpkg copy -b registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:1.1.0 --to-repo $dockerhostname/tap-demo/tap-packages
 tanzu secret registry add tap-registry --username $dockerusername --password $dockerpassword --server $dockerhostname --export-to-all-namespaces --yes --namespace tap-install
-tanzu package repository add tanzu-tap-repository --url $dockerhostname/tap-demo/tap-packages:1.0.2 --namespace tap-install
+tanzu package repository add tanzu-tap-repository --url $dockerhostname/tap-demo/tap-packages:1.1.0 --namespace tap-install
 tanzu package repository get tanzu-tap-repository --namespace tap-install
 tanzu package available list --namespace tap-install
 echo "############### TAP 1.0.2 Install   ##################"
-tanzu package install tap -p tap.tanzu.vmware.com -v 1.0.2 --values-file $HOME/tap-script/tap-values.yaml -n tap-install
+tanzu package install tap -p tap.tanzu.vmware.com -v 1.1.0 --values-file $HOME/tap-script/tap-values.yaml -n tap-install
 tanzu package installed list -A
 reconcilestat=$(tanzu package installed list -A -o json | jq ' .[] | select(.status == "Reconcile failed: Error (see .status.usefulErrorMessage for details)" or .status == "Reconciling")' | jq length | awk '{sum=sum+$0} END{print sum}')
 if [ $reconcilestat > '0' ];
@@ -45,15 +45,6 @@ tanzu package installed list -A
 echo "############# Updating tap-values file with LB ip ################"
 
 ip=$(kubectl get svc -n tap-gui -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
-hostname=$(kubectl get svc -n tap-gui -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}')
-if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]];
- then
-   sed -i -r "s/lbip/$ip/g" "$HOME/tap-script/tap-values.yaml"
-else
-sed -i -r "s/lbip/$hostname/g" "$HOME/tap-script/tap-values.yaml"
-fi
-tanzu package installed update tap --package-name tap.tanzu.vmware.com --version 1.0.2 -n tap-install -f $HOME/tap-script/tap-values.yaml
-tanzu package installed list -A
 
 echo "################ Cluster supply chain list #####################"
 tanzu apps cluster-supply-chain list
@@ -70,7 +61,6 @@ metadata:
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: e30K
-
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -78,68 +68,31 @@ metadata:
   name: default
 secrets:
   - name: registry-credentials
+  - name: tap-registry
 imagePullSecrets:
   - name: registry-credentials
   - name: tap-registry
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: default
-rules:
-- apiGroups: [source.toolkit.fluxcd.io]
-  resources: [gitrepositories]
-  verbs: ['*']
-- apiGroups: [source.apps.tanzu.vmware.com]
-  resources: [imagerepositories]
-  verbs: ['*']
-- apiGroups: [carto.run]
-  resources: [deliverables, runnables]
-  verbs: ['*']
-- apiGroups: [kpack.io]
-  resources: [images]
-  verbs: ['*']
-- apiGroups: [conventions.apps.tanzu.vmware.com]
-  resources: [podintents]
-  verbs: ['*']
-- apiGroups: [""]
-  resources: ['configmaps']
-  verbs: ['*']
-- apiGroups: [""]
-  resources: ['pods']
-  verbs: ['list']
-- apiGroups: [tekton.dev]
-  resources: [taskruns, pipelineruns]
-  verbs: ['*']
-- apiGroups: [tekton.dev]
-  resources: [pipelines]
-  verbs: ['list']
-- apiGroups: [kappctrl.k14s.io]
-  resources: [apps]
-  verbs: ['*']
-- apiGroups: [serving.knative.dev]
-  resources: ['services']
-  verbs: ['*']
-- apiGroups: [servicebinding.io]
-  resources: ['servicebindings']
-  verbs: ['*']
-- apiGroups: [services.apps.tanzu.vmware.com]
-  resources: ['resourceclaims']
-  verbs: ['*']
-- apiGroups: [scanning.apps.tanzu.vmware.com]
-  resources: ['imagescans', 'sourcescans']
-  verbs: ['*']
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: default
+  name: default-permit-deliverable
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: default
+  kind: ClusterRole
+  name: deliverable
+subjects:
+  - kind: ServiceAccount
+    name: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: default-permit-workload
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: workload
 subjects:
   - kind: ServiceAccount
     name: default
@@ -155,7 +108,7 @@ spec:
     default isCompliant = false
 
     # Accepted Values: "Critical", "High", "Medium", "Low", "Negligible", "UnknownSeverity"
-    violatingSeverities := ["Critical","High","UnknownSeverity"]
+    violatingSeverities := []
     ignoreCVEs := []
 
     contains(array, elem) = true {
@@ -184,7 +137,7 @@ grype:
 EOF
 
 echo "################### Installing Grype Scanner ##############################"
-#tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version 1.0.2  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
+tanzu package install grype-scanner --package-name grype.scanning.apps.tanzu.vmware.com --version 1.1.0  --namespace tap-install -f ootb-supply-chain-basic-values.yaml
 echo "################### Creating workload ##############################"
 tanzu apps workload create tanzu-java-web-app  --git-repo https://github.com/Eknathreddy09/tanzu-java-web-app --git-branch main --type web --label apps.tanzu.vmware.com/has-tests=true --label app.kubernetes.io/part-of=tanzu-java-web-app  --type web -n tap-install --yes
 tanzu apps workload get tanzu-java-web-app -n tap-install

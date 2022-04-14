@@ -118,7 +118,7 @@ buildservice:
   kp_default_repository_password: $dockerpassword
   tanzunet_username: "$tanzunetusername" # Provide the Tanzu network user name
   tanzunet_password: "$tanzunetpassword" # Provide the Tanzu network password
-  descriptor_name: "tap-1.0.0-full"
+  descriptor_name: "full"
   enable_automatic_dependency_updates: true
 supply_chain: testing_scanning
 ootb_supply_chain_testing_scanning:
@@ -174,10 +174,10 @@ sudo mv pivnet-linux-amd64-3.0.1 /usr/local/bin/pivnet
 
 echo "########## Installing Tanzu CLI  #############"
 pivnet login --api-token=${pivnettoken}
-pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.0.0' --product-file-id=1105818
+pivnet download-product-files --product-slug='tanzu-cluster-essentials' --release-version='1.1.0' --product-file-id=1191987
 mkdir $HOME/tanzu-cluster-essentials
-tar -xvf tanzu-cluster-essentials-linux-amd64-1.0.0.tgz -C $HOME/tanzu-cluster-essentials
-export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:82dfaf70656b54dcba0d4def85ccae1578ff27054e7533d08320244af7fb0343
+tar -xvf tanzu-cluster-essentials-linux-amd64-1.1.0.tgz -C $HOME/tanzu-cluster-essentials
+export INSTALL_BUNDLE=registry.tanzu.vmware.com/tanzu-cluster-essentials/cluster-essentials-bundle@sha256:ab0a3539da241a6ea59c75c0743e9058511d7c56312ea3906178ec0f3491f51d
 export INSTALL_REGISTRY_HOSTNAME=registry.tanzu.vmware.com
 export INSTALL_REGISTRY_USERNAME=$tanzunetusername
 export INSTALL_REGISTRY_PASSWORD=$tanzunetpassword
@@ -190,12 +190,12 @@ echo "######## Installing Imgpkg ###########"
 sudo cp $HOME/tanzu-cluster-essentials/imgpkg /usr/local/bin/imgpkg
 imgpkg version
 echo "#################################"
-pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.0.2' --product-file-id=1156168
+pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='1.1.0' --product-file-id=1190781
 mkdir $HOME/tanzu
 tar -xvf tanzu-framework-linux-amd64.tar -C $HOME/tanzu
 export TANZU_CLI_NO_INIT=true
 cd $HOME/tanzu
-sudo install cli/core/v0.11.1/tanzu-core-linux_amd64 /usr/local/bin/tanzu
+sudo install cli/core/v0.11.2/tanzu-core-linux_amd64 /usr/local/bin/tanzu
 tanzu version
 tanzu plugin install --local cli all
 tanzu plugin list
