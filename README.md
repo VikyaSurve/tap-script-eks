@@ -14,17 +14,20 @@ Keep these values Handy:
     
     2. Tanzu network username
     
-    3. Tanzu network passwor
+    3. Tanzu network password
     
     4. Ingress Domain for CNRS
     
     5. Domain name for Learning center
     
-    6. Region to deploy AKS Cluster and ACR repo 
+    6. Region to deploy EKS Cluster 
     
     7. github token
     
-    8. Subscription ID 
+    8. AWS Credentials - Access Key, Session Key and Session Token (Optional)
+    
+    9. ACR Credentials
+    
 
 Run ./tap-script.sh
 
