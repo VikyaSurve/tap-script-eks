@@ -13,7 +13,7 @@ tanzu secret registry add tap-registry --username $dockerusername --password $do
 tanzu package repository add tanzu-tap-repository --url $dockerhostname/tap-demo/tap-packages:1.1.0 --namespace tap-install
 tanzu package repository get tanzu-tap-repository --namespace tap-install
 tanzu package available list --namespace tap-install
-echo "############### TAP 1.0.2 Install   ##################"
+echo "############### TAP 1.1.0 Install   ##################"
 tanzu package install tap -p tap.tanzu.vmware.com -v 1.1.0 --values-file $HOME/tap-script/tap-values.yaml -n tap-install
 tanzu package installed list -A
 reconcilestat=$(tanzu package installed list -A -o json | jq ' .[] | select(.status == "Reconcile failed: Error (see .status.usefulErrorMessage for details)" or .status == "Reconciling")' | jq length | awk '{sum=sum+$0} END{print sum}')

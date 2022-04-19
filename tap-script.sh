@@ -1,5 +1,9 @@
 #!/bin/bash
-echo "############################ Keep Azure container registry credentials handy ######################"
+echo "############################ Keep these values handy:   ######################"
+echo "############################ Pivnet token, Tanzu network username  ######################"
+echo "############################ Tanzu network password, Ingress Domain for CNRS   ######################"
+echo "############################ domain name for Learning center, region to deploy EKS Cluster and ACR repo  ######################"
+echo "############################ github token, Subscription ID   ######################"
 echo "#####################################################################################################"
 echo "##### Pivnet Token: login to tanzu network, click on your username in top right corner of the page > select Edit Profile, scroll down and click on Request New Refresh Token ######"
 read -p "Enter the Pivnet token: " pivnettoken
@@ -166,7 +170,6 @@ echo "##########################################################################
 echo "########### Creating Secrets in tap-install namespace  #############"
 kubectl create ns tap-install
 kubectl create secret docker-registry registry-credentials --docker-server=$dockerhostname --docker-username=$dockerusername --docker-password=$dockerpassword -n tap-install
-kubectl create secret docker-registry image-secret --docker-server=$dockerhostname --docker-username=$dockerusername --docker-password=$dockerpassword -n tap-install
 echo "############# Installing Pivnet ###########"
 wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v3.0.1/pivnet-linux-amd64-3.0.1
 chmod +x pivnet-linux-amd64-3.0.1
